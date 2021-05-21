@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using UnfollowDetectAPI.Result;
+using InstaSharper.Classes.Models;
 
 namespace UnfollowDetectAPI.Controllers
 {
@@ -18,7 +19,7 @@ namespace UnfollowDetectAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IDataResult<List<string>>> Get(string username)
+        public async Task<IDataResult<InstaUserShortList>> Get(string username)
         {
             return await InstagramManager.GetUnfollowers(username, _config);
         }

@@ -17,26 +17,26 @@ namespace UnfollowDetectAPI
     {
         private static UserSessionData _user;
 
-        public static async Task<IDataResult<List<string>>> GetUnfollowers(string username, IConfiguration config)
+        public static async Task<IDataResult<InstaUserShortList>> GetUnfollowers(string username, IConfiguration config)
         {
             try
             {
-                InstagramManager.GetUser(config);
+                GetUser(config);
 
-                var api = await InstagramManager.Login();
+                var api = await Login();
                 if (api != null)
                 {
-                    List<string> result = await InstagramManager.GetUnfollowers(api, username);
-                    return new SuccessDataResult<List<string>>(result, "Process Succeeded.");
+                    InstaUserShortList result = await GetUnfollowers(api, username);
+                    return new SuccessDataResult<InstaUserShortList>(result, "Process Succeeded.");
                 }
                 else
                 {
-                    return new ErrorDataResult<List<string>>(message: "An Error Occured: Cannot Connect to Instagram API. Login Information May Not Be Correct!");
+                    return new ErrorDataResult<InstaUserShortList>(message: "An Error Occured: Cannot Connect to Instagram API. Login Information May Not Be Correct!");
                 }
             }
             catch (Exception ex)
             {
-                return new ErrorDataResult<List<string>>(message: "An Error Occured: " + ex.Message);
+                return new ErrorDataResult<InstaUserShortList>(message: "An Error Occured: " + ex.Message);
             }
 
         }
@@ -70,7 +70,7 @@ namespace UnfollowDetectAPI
             }
         }
 
-        private static async Task<List<string>> GetUnfollowers(IInstaApi api, string username)
+        private static async Task<InstaUserShortList> GetUnfollowers(IInstaApi api, string username)
         {
             var followersListTask = GetFollowersList(api, username);
             var followingListTask = GetFollowingList(api, username);
@@ -85,11 +85,17 @@ namespace UnfollowDetectAPI
                 throw new Exception("Please check your username!");
             }
 
-            HashSet<string> followerUsernameList = new HashSet<string>(followersList.Select(s => s.UserName));
+            InstaUserShortList unfollowers = new InstaUserShortList();
 
-            var unfollowerList = followingList.Where(m => !followerUsernameList.Contains(m.UserName)).Select(f => f.UserName).ToList<string>();
+            foreach (var user in followingList)
+            {
+                if (followersList.Where(x => x.UserName == user.UserName).FirstOrDefault() == null)
+                {
+                    unfollowers.Add(user);
+                }
+            }
 
-            return unfollowerList;
+            return unfollowers;
         }
 
         private static async Task<InstaUserShortList> GetFollowingList(IInstaApi api, string username)

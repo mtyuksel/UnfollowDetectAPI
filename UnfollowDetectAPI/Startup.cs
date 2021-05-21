@@ -26,6 +26,7 @@ namespace UnfollowDetectAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,6 +36,8 @@ namespace UnfollowDetectAPI
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseCors(builder => builder.WithOrigins("http://localhost:4200", "https://angular.mtyuksel.com").AllowAnyHeader());
 
             app.UseHttpsRedirection();
 
